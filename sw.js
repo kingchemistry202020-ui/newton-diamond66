@@ -1,4 +1,4 @@
-const CACHE_NAME = 'diamond-newton-v66';
+const CACHE_NAME = 'diamond-newton-v82-final-linked';
 const CORE_ASSETS = [
   './',
   './index.html',

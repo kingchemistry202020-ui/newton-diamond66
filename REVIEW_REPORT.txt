@@ -1,16 +1,16 @@
-مراجعة نهائية - Diamond Newton V66
+Diamond Newton V82 Final Linked - Review Report
 
-تمت المراجعة على النسخة النهائية داخل الحزمة.
+Checked:
+- HTML package generated from V81 Exam Planner.
+- Version labels updated to V82 Final Linked.
+- JavaScript syntax checked using node --check for all inline scripts: PASS.
+- PWA cache name updated to diamond-newton-v82-final-linked.
+- Exam Planner is included in JSON and text backup payload.
+- Central refresh layer added: refreshLinkedViews().
+- Save wrapper added to refresh: students, main schedule, Plan B, today schedule, dashboard, next-class timer, exams, notifications, safety panel.
+- Dashboard keeps exam alerts visible.
+- Review class creation from exam triggers full refresh.
 
-نتائج الفحص:
-- JavaScript: لا توجد Syntax Errors في كل السكربتات الداخلية.
-- Service Worker: لا توجد Syntax Errors.
-- IDs: لا توجد IDs مكررة.
-- getElementById: لا توجد عناصر ناقصة مطلوبة ثابتًا داخل الصفحة.
-- أزرار onclick: لا توجد دوال ناقصة من الأزرار الأساسية.
-- manifest.json: صالح وجاهز لـ PWA.
-- ملفات GitHub Pages: موجودة index.html / manifest.json / sw.js / icons / .nojekyll.
-
-ملاحظات تشغيل مهمة:
-- لا يمكن ضمان 100% من كل سيناريوهات التشغيل بدون تجربة فعلية على الموبايل ومع بيانات Firebase الحقيقية، لكن الفحص الثابت للكود والبنية الأساسية سليم.
-- رفع الملفات كما هي على GitHub Pages يكفي لتشغيل التطبيق كرابط، ثم تثبيته من Chrome كـ PWA.
+Notes:
+- External browser notifications are not enabled; reminders appear inside the app when it is opened.
+- Firebase availability depends on internet and existing database rules.

@@ -1,18 +1,19 @@
-# Diamond Newton - GitHub PWA Package
+# Diamond Newton V82 Final Linked
 
-## طريقة الرفع على GitHub Pages
-1. فك الضغط عن الملف.
-2. ارفع كل الملفات داخل Repository على GitHub.
-3. من Settings > Pages اختار Branch: main و Folder: /root.
-4. افتح رابط GitHub Pages.
-5. من الموبايل افتح الرابط من Chrome واضغط Add to Home screen / تثبيت التطبيق.
+نسخة نهائية مترابطة للتطبيق.
 
 ## الملفات المهمة
-- index.html: التطبيق كامل.
-- manifest.json: ملف تحويله إلى PWA.
-- sw.js: تشغيل Offline cache الأساسي.
-- icon.png + icon-192.png + icon-512.png: أيقونات التطبيق.
-- .nojekyll: لتفادي مشاكل GitHub Pages مع الملفات.
+- index.html
+- manifest.json
+- sw.js
+- icon.png
+- icon-192.png
+- icon-512.png
+- .nojekyll
 
-## ملاحظة
-المزامنة السحابية Firebase كما هي داخل الكود الأصلي، ولم يتم تغيير رابط قاعدة البيانات.
+## أهم ما تم تثبيته
+- جدول الامتحانات وتنبيهات المراجعة.
+- ربط الجدول الأساسي مع Plan B.
+- ربط التسجيل والتقارير والمؤقت ولوحة اليوم.
+- النسخ الاحتياطية تشمل الطلاب والجدول الأساسي وPlan B والامتحانات.
+- تحديث كاش PWA إلى V82.
