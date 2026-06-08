@@ -6,7 +6,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Newton">
-    <title>Diamond Newton V86 Clean Timer Red Logo</title>
+    <title>Diamond Newton V87 Stability Password Fix</title>
     
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -40,7 +40,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script>
-        const APP_VERSION = 'Diamond Newton V86 Clean Timer Red Logo';
+        const APP_VERSION = 'Diamond Newton V87 Stability Password Fix';
         const APP_VERSION_CODE = 840;
         let db = [];
         let sched = [];
@@ -664,8 +664,6 @@
             try {
                 await loadData();
                 
-                cfg.skip = true; cfg.p = '';
-                try { localStorage.setItem('cfg_v40', JSON.stringify(cfg)); } catch(e) {}
                 let fSize = localStorage.getItem('fz_v40') || '16px'; document.documentElement.style.setProperty('--app-font-size', fSize); let fzSel = document.getElementById('fzSelect'); if (fzSel) fzSel.value = fSize;
                 let appFont = localStorage.getItem('font_v52') || 'Cairo'; document.documentElement.style.setProperty('--app-font-family', `'${appFont}', sans-serif`); let fontSel = document.getElementById('fontSelect'); if (fontSel) fontSel.value = appFont;
                 let ui = 'neon'; document.body.setAttribute('data-ui', ui); let uiSel = document.getElementById('uiSelect'); if (uiSel) uiSel.value = ui;
@@ -673,7 +671,7 @@
                 let bg = localStorage.getItem('bg_v40') || localStorage.getItem('bg_v26') || 'dark'; document.body.setAttribute('data-bg', bg); let bgSel = document.getElementById('bgSelect'); if (bgSel) bgSel.value = bg;
                 let isRgb = localStorage.getItem('rgb_v40') === 'true'; let rgbCheckbox = document.getElementById('rgbMode'); if (rgbCheckbox) rgbCheckbox.checked = isRgb; toggleRGB(isRgb);
                 
-                hide('loginScreen'); show('app'); var hb = document.getElementById('homeBtn'); if (hb) hb.style.display = 'flex';
+                applyAccessMode();
                 
                 updateGroupsDatalist(); renderThemes(); renderSubjects(); draw(); restoreStudentsAccordion(); renderPlanBList(); renderTodaySched(); renderNextClassBanner(); startNextClassCountdown(); updateTodayDashboard(); renderExams(); updateExamDashboard();
                 var hb2 = document.getElementById('homeBtn'); if (hb2) makeDraggable(hb2); startTitleSwitcher();
@@ -688,7 +686,20 @@
 
         function setFontSize(sz) { document.documentElement.style.setProperty('--app-font-size', sz); localStorage.setItem('fz_v40', sz); }
         function setAppFont(fontName) { document.documentElement.style.setProperty('--app-font-family', `'${fontName}', sans-serif`); localStorage.setItem('font_v52', fontName); let fs = document.getElementById('fontSelect'); if(fs) fs.value = fontName; toast('تم تغيير خط التطبيق ✍️'); }
-        function login() { sessionStorage.setItem('auth', '1'); hide('loginScreen'); show('app'); let hb=document.getElementById('homeBtn'); if(hb) hb.style.display='flex'; toast('تم الدخول بدون كلمة مرور ✅'); }
+        function passwordRequired(){ return !cfg.skip && String(cfg.p || '').trim().length > 0; }
+        function showAppUI(){ hide('loginScreen'); show('app'); let hb=document.getElementById('homeBtn'); if(hb) hb.style.display='flex'; }
+        function showLoginUI(){ let loginEl=document.getElementById('loginScreen'); if(loginEl) loginEl.style.display='flex'; hide('app'); let hb=document.getElementById('homeBtn'); if(hb) hb.style.display='none'; let passEl=document.getElementById('pass'); if(passEl){ passEl.value=''; setTimeout(()=>{try{passEl.focus();}catch(e){}},150); } }
+        function applyAccessMode(){ if(passwordRequired() && sessionStorage.getItem('auth') !== '1') showLoginUI(); else showAppUI(); }
+        function login(){
+            if(!passwordRequired()){ sessionStorage.setItem('auth','1'); showAppUI(); toast('تم الدخول بدون كلمة مرور ✅'); return; }
+            let entered = v('pass');
+            if(entered === String(cfg.p || '')){ sessionStorage.setItem('auth','1'); showAppUI(); toast('تم الدخول بنجاح ✅'); }
+            else { let pEl=document.getElementById('pass'); if(pEl) pEl.value=''; alert('كلمة المرور غير صحيحة'); }
+        }
+        function lockNow(){
+            if(!passwordRequired()){ alert('القفل غير مفعل. لإظهاره: اكتب كلمة مرور وألغِ اختيار دخول بدون باسورد.'); return; }
+            sessionStorage.removeItem('auth'); closeM(); applyAccessMode();
+        }
         function exitApp() { if (confirm('هل تريد الخروج من التطبيق نهائياً؟')) { try { if (typeof navigator !== 'undefined' && navigator.app && navigator.app.exitApp) { navigator.app.exitApp(); } else if (typeof navigator !== 'undefined' && navigator.device && navigator.device.exitApp) { navigator.device.exitApp(); } else { window.close(); } } catch(e) { window.close(); } } }
         function goHomeAction(e) { if (isDraggingHome) { e.preventDefault(); e.stopPropagation(); isDraggingHome = false; return; } closeM(); hide('screenshotView'); document.getElementById('homeBtn').style.display = 'flex'; window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
@@ -1194,14 +1205,21 @@
         function delSubject(idx) { if (confirm('هل تريد حذف هذه المادة نهائياً؟')) { cfg.subjects.splice(idx, 1); save(); renderSubjects(); draw(); } }
         function saveSet() {
             cfg.n = v('tN');
-            cfg.p = v('tP');
+            let passValue = v('tP').trim();
+            let skipLogin = document.getElementById('noP').checked;
+            if(!skipLogin && !passValue){
+                alert('لا يمكن تفعيل القفل بدون كلمة مرور. اكتب كلمة مرور أو فعل خيار دخول بدون باسورد.');
+                return;
+            }
+            cfg.p = passValue;
             cfg.waMsg = v('tWAMsg');
-            cfg.skip = document.getElementById('noP').checked;
+            cfg.skip = skipLogin;
             cfg.titleA = v('titleASet') || 'نيوتن الماسي';
             cfg.titleB = v('titleBSet') || 'مستر أحمد';
             save();
             startTitleSwitcher();
-            toast('تم حفظ الإعدادات وتحديث عنوان الواجهة ✅');
+            applyAccessMode();
+            toast(cfg.skip ? 'تم حفظ الإعدادات: الدخول بدون باسورد مفعل ✅' : 'تم حفظ الإعدادات: القفل بالباسورد مفعل 🔐');
             closeM();
         }
 
@@ -3139,11 +3157,11 @@ ${dupNames.join('\n')}
 <datalist id="groupsDatalist"></datalist>
 
 
-<div id="loginScreen" style="display:none!important; position:fixed; inset:0; z-index:9999; background:var(--menu-bg); display:flex; align-items:center; justify-content:center; padding:20px;">
+<div id="loginScreen" style="display:none; position:fixed; inset:0; z-index:9999; background:var(--menu-bg); align-items:center; justify-content:center; padding:20px;">
     <div class="glass-box" style="width:100%; max-width:380px; text-align:center;">
         <h1 class="header-title" style="color:var(--txt);">Newton Pro</h1>
-        <p style="color:var(--neon); margin:10px 0; font-weight:bold;">نظام الإدارة الماسي V86 Clean Timer Red Logo</p>
-        <input type="password" id="pass" placeholder="كلمة المرور" style="text-align:center; letter-spacing: 5px; margin-top:20px;">
+        <p style="color:var(--neon); margin:10px 0; font-weight:bold;">نظام الإدارة الماسي V87 Stability Password Fix</p>
+        <input type="password" id="pass" placeholder="كلمة المرور" onkeydown="if(event.key==='Enter') login()" style="text-align:center; letter-spacing: 5px; margin-top:20px;">
         <button class="btn-action" style="width:100%;" onclick="login()">دخول المعمل</button>
     </div>
 </div>
@@ -3267,7 +3285,7 @@ ${dupNames.join('\n')}
     </div>
 
 
-    <div style="text-align:center; opacity:.75; font-weight:900; font-size:.75rem; margin:12px 0 4px; color:var(--txt);">Diamond Newton V86 Clean Timer Red Logo</div>
+    <div style="text-align:center; opacity:.75; font-weight:900; font-size:.75rem; margin:12px 0 4px; color:var(--txt);">Diamond Newton V87 Stability Password Fix</div>
     <button class="fab" onclick="showM('addM')">
         <i class="fa-solid fa-plus"></i>
     </button>
@@ -3572,10 +3590,12 @@ ${dupNames.join('\n')}
         
         <input id="tN" placeholder="اسم المعلم">
         <input id="tP" placeholder="كلمة المرور">
+        <small style="display:block; color:var(--txt); opacity:.75; margin:-6px 0 10px; line-height:1.6; font-weight:800;">لو خيار دخول بدون باسورد متفعل، التطبيق يفتح مباشرة. لو ألغيت الخيار لازم تكتب كلمة مرور.</small>
         
-        <label style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+        <label style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
             <input type="checkbox" id="noP" style="width:auto; margin:0; accent-color:var(--neon);"> دخول بدون باسورد
         </label>
+        <button class="btn-capsule" style="width:100%; margin-bottom:15px; color:var(--warn); border-color:var(--warn);" onclick="lockNow()">اختبار القفل الآن 🔐</button>
         
         <div style="background:var(--glass-bg); border:var(--border-box); border-radius:var(--rad-card); padding:15px; margin-bottom:15px;">
             <h4 style="color:var(--neon); margin:0 0 10px;">عنوان الواجهة العلوي ✨</h4>
@@ -3654,7 +3674,7 @@ ${dupNames.join('\n')}
             <div style="display:none; margin-top:15px;">
                 <div class="safety-info-card">
                     <span>رقم النسخة</span>
-                    <b id="appVersionText">Diamond Newton V86 Clean Timer Red Logo</b>
+                    <b id="appVersionText">Diamond Newton V87 Stability Password Fix</b>
                 </div>
                 <div class="safety-info-card">
                     <span>آخر نسخة احتياطية</span>
@@ -4563,7 +4583,7 @@ function saveEmergency(){
    طبقة ربط نهائية: أي تغيير في الطلاب/الجدول/Plan B/الاختبارات/التسجيل يسمع في باقي التطبيق
    ========================================================= */
 (function(){
-  const FINAL_VERSION = 'Diamond Newton V86 Clean Timer Red Logo';
+  const FINAL_VERSION = 'Diamond Newton V87 Stability Password Fix';
   let refreshTimer = null;
   function safeCall(name, fn){
     try { if (typeof fn === 'function') fn(); }

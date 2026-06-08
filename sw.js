@@ -1,4 +1,4 @@
-const CACHE_NAME = 'diamond-newton-v86-clean-timer-red-logo';
+const CACHE_NAME = 'diamond-newton-v87-stability-password-fix';
 const CORE_ASSETS = [
   './',
   './index.html',
