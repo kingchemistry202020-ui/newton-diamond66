@@ -6,7 +6,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Newton">
-    <title>Diamond Newton V82 Final Linked</title>
+    <title>Diamond Newton V86 Clean Timer Red Logo</title>
     
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -40,8 +40,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script>
-        const APP_VERSION = 'Diamond Newton V82 Final Linked';
-        const APP_VERSION_CODE = 820;
+        const APP_VERSION = 'Diamond Newton V86 Clean Timer Red Logo';
+        const APP_VERSION_CODE = 840;
         let db = [];
         let sched = [];
         let altSched = []; // جداول Plan B البديلة لا تلمس الجدول الأساسي
@@ -61,7 +61,7 @@
         let todayFilter = 'all'; 
         let lastUndo = null; 
         
-        let cfg = { p: '', n: 'أ. أحمد علي', skip: true, waMsg: 'النجاح يليق بك جداً! ✨🏆', subjects: [] };
+        let cfg = { p: '', n: 'أ. أحمد علي', skip: true, waMsg: 'النجاح يليق بك جداً! ✨🏆', subjects: [], titleA: 'نيوتن الماسي', titleB: 'مستر أحمد' };
 
 
         function v(id) { let el = document.getElementById(id); return el ? el.value.trim() : ''; }
@@ -70,9 +70,35 @@
         function closeM() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
         function toast(txt, ms = 3000) { let x = document.getElementById("toast"); if (x) { x.innerText = txt; x.className = "show"; setTimeout(() => x.className = "", ms); } }
 
+        function toggleStudentsAccordion(e){
+            if(e && e.target && e.target.closest('button,input,select,.student-card,.act-pill')) return;
+            const body = document.getElementById('studentsAccordionBody');
+            const icon = document.getElementById('studentsAccordionIcon');
+            if(!body) return;
+            const willOpen = body.style.display === 'none';
+            body.style.display = willOpen ? 'block' : 'none';
+            if(icon){
+                icon.classList.toggle('fa-chevron-up', willOpen);
+                icon.classList.toggle('fa-chevron-down', !willOpen);
+            }
+            try{ localStorage.setItem('studentsAccordionClosed_v84', willOpen ? '0' : '1'); }catch(err){}
+        }
+        function restoreStudentsAccordion(){
+            const body = document.getElementById('studentsAccordionBody');
+            const icon = document.getElementById('studentsAccordionIcon');
+            if(!body) return;
+            let closed = false;
+            try{ closed = localStorage.getItem('studentsAccordionClosed_v84') === '1'; }catch(err){}
+            body.style.display = closed ? 'none' : 'block';
+            if(icon){
+                icon.classList.toggle('fa-chevron-up', !closed);
+                icon.classList.toggle('fa-chevron-down', closed);
+            }
+        }
+
 
         function showM(id) { 
-            if (id === 'setM') { document.getElementById('tN').value = cfg.n; document.getElementById('tP').value = cfg.p; document.getElementById('noP').checked = cfg.skip; document.getElementById('tWAMsg').value = cfg.waMsg || ''; updateSafetyPanel(); }
+            if (id === 'setM') { document.getElementById('tN').value = cfg.n; document.getElementById('tP').value = cfg.p; document.getElementById('noP').checked = cfg.skip; document.getElementById('tWAMsg').value = cfg.waMsg || ''; let ta=document.getElementById('titleASet'); if(ta) ta.value = cfg.titleA || 'نيوتن الماسي'; let tb=document.getElementById('titleBSet'); if(tb) tb.value = cfg.titleB || 'مستر أحمد'; updateSafetyPanel(); }
             if (id === 'schedM') { 
                 let searchInput = document.getElementById('schedSearch'); 
                 if (searchInput) searchInput.value = ''; 
@@ -265,7 +291,7 @@
             let timerLabel = st.state === 'started' ? 'الحصة جارية الآن' : 'الوقت المتبقي';
             let timerIcon = st.state === 'started' ? '▶' : '⏳';
             let timerValue = String(st.countdownText || '').replace('⏳', '').trim();
-            box.style.display = 'flex';
+            box.style.display = 'grid';
             box.classList.toggle('next-started', st.state === 'started');
             box.classList.toggle('next-urgent', st.isActualToday && st.msLeft !== null && st.msLeft > 0 && st.msLeft <= 10 * 60 * 1000);
             box.innerHTML = `
@@ -277,7 +303,7 @@
                 <span class="next-line">${formatTime12(item.time)} • ${escapeHTML(item.sub || '')} • ${escapeHTML(item.name || '')}</span>
               </div>
               <div class="next-timer-wrap" aria-label="ساعة الوقت المتبقي على أقرب حصة">
-                <div class="next-timer-top"><span class="next-timer-icon">${timerIcon}</span><small class="next-timer-label">${timerLabel}</small></div>
+                <div class="next-timer-top"><span class="next-timer-icon ${st.state === 'started' ? 'started' : 'running'}">${timerIcon}</span><small class="next-timer-label">${timerLabel}</small></div>
                 <strong class="next-countdown" aria-label="عد تنازلي لأقرب حصة">${escapeHTML(timerValue)}</strong>
               </div>`;
         }
@@ -649,7 +675,7 @@
                 
                 hide('loginScreen'); show('app'); var hb = document.getElementById('homeBtn'); if (hb) hb.style.display = 'flex';
                 
-                updateGroupsDatalist(); renderThemes(); renderSubjects(); draw(); renderPlanBList(); renderTodaySched(); renderNextClassBanner(); startNextClassCountdown(); updateTodayDashboard(); renderExams(); updateExamDashboard();
+                updateGroupsDatalist(); renderThemes(); renderSubjects(); draw(); restoreStudentsAccordion(); renderPlanBList(); renderTodaySched(); renderNextClassBanner(); startNextClassCountdown(); updateTodayDashboard(); renderExams(); updateExamDashboard();
                 var hb2 = document.getElementById('homeBtn'); if (hb2) makeDraggable(hb2); startTitleSwitcher();
             } catch (error) {
                 console.error("Init Error:", error);
@@ -667,7 +693,33 @@
         function goHomeAction(e) { if (isDraggingHome) { e.preventDefault(); e.stopPropagation(); isDraggingHome = false; return; } closeM(); hide('screenshotView'); document.getElementById('homeBtn').style.display = 'flex'; window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
 
-        function startTitleSwitcher() { const titleEl = document.getElementById('mainTitle'); if (!titleEl) return; let showingNewton = true; setInterval(() => { titleEl.style.opacity = '0'; setTimeout(() => { if (showingNewton) { titleEl.innerText = "مستر أحمد"; } else { titleEl.innerText = "نيوتن الماسي"; } titleEl.style.opacity = '1'; showingNewton = !showingNewton; }, 500); }, 4000); }
+        function applyMainTitleText(){
+            const titleEl = document.getElementById('mainTitle');
+            if(!titleEl) return;
+            const a = (cfg.titleA || 'نيوتن الماسي').trim();
+            titleEl.innerText = a;
+            titleEl.style.opacity = '1';
+        }
+        function startTitleSwitcher() {
+            const titleEl = document.getElementById('mainTitle');
+            if (!titleEl) return;
+            if (window.mainTitleSwitchTimer) clearInterval(window.mainTitleSwitchTimer);
+            if (window.mainTitleSwitchFadeTimer) clearTimeout(window.mainTitleSwitchFadeTimer);
+            let titles = [(cfg.titleA || 'نيوتن الماسي').trim(), (cfg.titleB || 'مستر أحمد').trim()].filter(Boolean);
+            if (!titles.length) titles = ['نيوتن الماسي'];
+            let idx = 0;
+            titleEl.innerText = titles[0];
+            titleEl.style.opacity = '1';
+            if (titles.length < 2 || titles[0] === titles[1]) return;
+            window.mainTitleSwitchTimer = setInterval(() => {
+                titleEl.style.opacity = '0';
+                window.mainTitleSwitchFadeTimer = setTimeout(() => {
+                    idx = (idx + 1) % titles.length;
+                    titleEl.innerText = titles[idx];
+                    titleEl.style.opacity = '1';
+                }, 260);
+            }, 4500);
+        }
         function toggleRGB(val) { if (val) { document.body.classList.add('rgb-mode'); } else { document.body.classList.remove('rgb-mode'); } localStorage.setItem('rgb_v40', val); }
         function setUI(ui) { document.body.setAttribute('data-ui', ui); localStorage.setItem('ui_v40', ui); let uiSel = document.getElementById('uiSelect'); if(uiSel) uiSel.value = ui; }
         function setT(theme) { document.body.setAttribute('data-theme', theme); localStorage.setItem('tm_v40', theme); }
@@ -728,7 +780,7 @@
             return {
                 app: 'Diamond Newton',
                 backupType: 'TEXT_CODE',
-                backupVersion: 82,
+                backupVersion: 84,
                 createdAt: new Date().toISOString(),
                 data: { db: db, cfg: cfg, sched: sched, altSched: altSched, exams: exams }
             };
@@ -1140,7 +1192,18 @@
         function renderSubjects() { let opts = cfg.subjects.map(s => `<option value="${s}">${s}</option>`).join(''); document.getElementById('sub').innerHTML = opts; document.getElementById('esub').innerHTML = opts; document.getElementById('scSub').innerHTML = '<option value="">اختر المادة</option>' + opts; document.getElementById('escSub').innerHTML = '<option value="">اختر المادة</option>' + opts; let emSubObj = document.getElementById('emSub'); if (emSubObj) emSubObj.innerHTML = '<option value="">اختر المادة</option>' + opts; let filters = `<div class="filter-pill ${filter === 'all' ? 'active' : ''}" onclick="setF('all', this)">الكل</div>`; cfg.subjects.forEach(s => { filters += `<div class="filter-pill ${filter === s ? 'active' : ''}" onclick="setF('${s}', this)">${s}</div>`; }); document.getElementById('filterContainer').innerHTML = filters; let setList = ''; cfg.subjects.forEach((s, idx) => { setList += `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:var(--glass-bg); border:var(--border-box); border-radius:var(--rad-input); margin-bottom:5px;"><span style="font-weight:bold; font-size:0.8rem; color:var(--txt);">${s}</span><i class="fa-solid fa-trash" style="color:var(--err); cursor:pointer;" onclick="delSubject(${idx})"></i></div>`; }); document.getElementById('subListSet').innerHTML = setList; }
         function addSubject() { let ns = v('newSub'); if (!ns) return; if (!cfg.subjects.includes(ns)) { cfg.subjects.push(ns); document.getElementById('newSub').value = ''; save(); renderSubjects(); toast('تمت الإضافة بنجاح'); } else { alert('هذه المادة موجودة بالفعل!'); } }
         function delSubject(idx) { if (confirm('هل تريد حذف هذه المادة نهائياً؟')) { cfg.subjects.splice(idx, 1); save(); renderSubjects(); draw(); } }
-        function saveSet() { cfg.n = v('tN'); cfg.p = v('tP'); cfg.waMsg = v('tWAMsg'); cfg.skip = document.getElementById('noP').checked; save(); toast('تم حفظ الإعدادات بنجاح'); closeM(); }
+        function saveSet() {
+            cfg.n = v('tN');
+            cfg.p = v('tP');
+            cfg.waMsg = v('tWAMsg');
+            cfg.skip = document.getElementById('noP').checked;
+            cfg.titleA = v('titleASet') || 'نيوتن الماسي';
+            cfg.titleB = v('titleBSet') || 'مستر أحمد';
+            save();
+            startTitleSwitcher();
+            toast('تم حفظ الإعدادات وتحديث عنوان الواجهة ✅');
+            closeM();
+        }
 
 
         function openClassFromSched(idx){
@@ -1836,7 +1899,25 @@ ${dupNames.join('\n')}
 
 
         @keyframes neonPulseTitle { 0% { text-shadow: 0 0 5px var(--neon), 0 0 10px var(--neon), 0 0 15px var(--neon); } 50% { text-shadow: 0 0 10px var(--neon), 0 0 25px var(--neon), 0 0 45px var(--neon); } 100% { text-shadow: 0 0 5px var(--neon), 0 0 10px var(--neon), 0 0 15px var(--neon); } }
-        #mainTitle { transition: opacity 0.5s ease; animation: neonPulseTitle 2s infinite ease-in-out; color: var(--txt); font-weight: 900; }
+        #mainTitle { transition: opacity 0.26s ease; animation: neonPulseTitle 2s infinite ease-in-out; color: var(--txt); font-weight: 900; }
+        .main-title-stable{
+          display:flex!important;
+          align-items:center!important;
+          justify-content:center!important;
+          margin:0!important;
+          min-width:165px!important;
+          max-width:42vw!important;
+          min-height:44px!important;
+          line-height:1.15!important;
+          text-align:center!important;
+          font-size:1.28rem!important;
+          white-space:nowrap!important;
+          overflow:hidden!important;
+          text-overflow:ellipsis!important;
+          transform:translateZ(0);
+          will-change:opacity;
+        }
+        @media(max-width:480px){.main-title-stable{min-width:128px!important;max-width:36vw!important;font-size:1.02rem!important;}}
         @keyframes hueCycle { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
         body.rgb-mode { animation: hueCycle 5s linear infinite; }
 
@@ -2707,6 +2788,349 @@ ${dupNames.join('\n')}
         .audit-fix-actions .btn-action:first-child{background:linear-gradient(135deg,var(--warn),var(--neon));color:#000;border-color:transparent;box-shadow:0 6px 18px rgba(0,0,0,.12);}
         @media(min-width:520px){.audit-summary{grid-template-columns:repeat(3,1fr);} .audit-fix-actions{grid-template-columns:repeat(2,1fr);} }
 
+
+        /* =========================================================
+           V84 CLEAN UI PATCH
+           - العنوان بنفس خط التطبيق بدون نيون/خلفية
+           - تصغير كارت المؤقت
+           - قائمة الطلاب أصبحت أكورديون
+           ========================================================= */
+        #mainTitle,
+        #mainTitle.main-title-stable{
+          font-family:var(--app-font-family)!important;
+          background:transparent!important;
+          background-image:none!important;
+          border:0!important;
+          outline:0!important;
+          box-shadow:none!important;
+          text-shadow:none!important;
+          animation:none!important;
+          color:var(--txt)!important;
+          filter:none!important;
+          min-height:34px!important;
+          height:34px!important;
+          line-height:34px!important;
+          padding:0 4px!important;
+          margin:0!important;
+          display:flex!important;
+          align-items:center!important;
+          justify-content:center!important;
+          font-size:1.16rem!important;
+          font-weight:950!important;
+          letter-spacing:0!important;
+          white-space:nowrap!important;
+          overflow:hidden!important;
+          text-overflow:ellipsis!important;
+          transform:none!important;
+          will-change:auto!important;
+          transition:opacity .16s ease!important;
+        }
+        #mainTitle::before,#mainTitle::after{content:none!important;display:none!important;}
+        @media(max-width:480px){
+          #mainTitle.main-title-stable{font-size:.98rem!important;min-width:118px!important;max-width:34vw!important;height:32px!important;line-height:32px!important;}
+        }
+
+        .next-class-box{
+          padding:10px 12px!important;
+          margin-bottom:10px!important;
+          gap:10px!important;
+          border-radius:22px!important;
+          min-height:0!important;
+          align-items:center!important;
+          flex-direction:row!important;
+          background:var(--glass-bg)!important;
+          border:2px solid var(--glass-border)!important;
+          box-shadow:0 6px 18px rgba(0,0,0,.08)!important;
+        }
+        .next-class-box::before{display:none!important;content:none!important;}
+        .next-class-box .next-info{gap:4px!important;min-width:0!important;}
+        .next-head-row{gap:6px!important;}
+        .next-class-box b{font-size:.94rem!important;color:var(--time-txt)!important;text-shadow:none!important;}
+        .next-mini-tag{padding:3px 8px!important;font-size:.64rem!important;background:var(--card-bg)!important;color:var(--time-txt)!important;border:1.6px solid var(--glass-border)!important;box-shadow:none!important;}
+        .next-line{font-size:.82rem!important;line-height:1.35!important;color:var(--txt)!important;font-weight:900!important;}
+        .next-timer-wrap{
+          min-width:132px!important;
+          max-width:150px!important;
+          width:auto!important;
+          padding:7px 8px!important;
+          gap:5px!important;
+          border-radius:18px!important;
+          background:var(--card-bg)!important;
+          border:2px solid var(--glass-border)!important;
+          box-shadow:0 4px 12px rgba(0,0,0,.06)!important;
+          backdrop-filter:none!important;
+        }
+        .next-timer-wrap::after{display:none!important;content:none!important;}
+        .next-timer-top{gap:5px!important;}
+        .next-timer-icon{width:21px!important;height:21px!important;font-size:.72rem!important;background:var(--glass-bg)!important;color:var(--time-txt)!important;box-shadow:none!important;border:1.5px solid var(--glass-border)!important;}
+        .next-timer-label{font-size:.68rem!important;color:var(--time-txt)!important;line-height:1!important;font-weight:950!important;}
+        .next-countdown{
+          min-width:112px!important;
+          min-height:34px!important;
+          height:34px!important;
+          padding:6px 8px!important;
+          border-radius:14px!important;
+          font-size:1.02rem!important;
+          letter-spacing:.6px!important;
+          background:var(--glass-bg)!important;
+          border:2px solid var(--glass-border)!important;
+          color:var(--time-txt)!important;
+          box-shadow:none!important;
+        }
+        @media(max-width:520px){
+          .next-class-box{padding:9px 10px!important;gap:8px!important;}
+          .next-mini-tag{display:none!important;}
+          .next-timer-wrap{min-width:118px!important;max-width:126px!important;padding:6px!important;}
+          .next-countdown{min-width:100px!important;font-size:.92rem!important;}
+          .next-line{font-size:.78rem!important;}
+        }
+
+        .students-accordion-box{overflow:hidden!important;padding:13px!important;}
+        .students-accordion-head{
+          display:grid!important;
+          grid-template-columns:1fr auto!important;
+          grid-template-areas:'title icon' 'actions actions'!important;
+          gap:10px!important;
+          align-items:center!important;
+          margin-bottom:0!important;
+          cursor:pointer!important;
+        }
+        .students-title-wrap{grid-area:title;min-width:0!important;}
+        .students-title-wrap h2{font-family:var(--app-font-family)!important;font-weight:950!important;font-size:1.08rem!important;color:var(--txt)!important;margin:0!important;line-height:1.25!important;text-shadow:none!important;}
+        .students-title-wrap small{display:block;color:var(--time-txt)!important;font-weight:850!important;font-size:.68rem!important;opacity:.82!important;margin-top:3px;}
+        .students-panel-actions{grid-area:actions!important;display:flex!important;gap:6px!important;overflow-x:auto!important;overflow-y:hidden!important;padding-bottom:2px!important;scrollbar-width:none!important;}
+        .students-panel-actions::-webkit-scrollbar{display:none!important;}
+        .students-panel-actions .btn-capsule{flex:0 0 auto!important;white-space:nowrap!important;}
+        .students-accordion-icon{grid-area:icon;color:var(--time-txt)!important;font-size:1rem!important;transition:transform .2s ease!important;}
+        .students-accordion-body{margin-top:12px!important;}
+        .students-search-row{display:flex!important;gap:6px!important;margin-bottom:9px!important;}
+        @media(max-width:520px){
+          .students-search-row{flex-direction:column!important;}
+          .students-search-row input,.students-search-row select{width:100%!important;flex:unset!important;}
+        }
+
+
+
+/* V86: Clean symmetric next-class timer, no overlap, animated hourglass */
+.next-class-box,
+.next-class-box.next-v86{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  align-items:stretch!important;
+  justify-items:stretch!important;
+  gap:10px!important;
+  padding:14px 15px!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:hidden!important;
+  position:relative!important;
+  border-radius:26px!important;
+  box-sizing:border-box!important;
+}
+.next-class-box::before{display:none!important;content:none!important;}
+.next-class-box .next-info{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  flex:none!important;
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:7px!important;
+  align-items:center!important;
+  justify-items:stretch!important;
+  position:relative!important;
+  z-index:1!important;
+  box-sizing:border-box!important;
+}
+.next-class-box .next-head-row{
+  width:100%!important;
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:8px!important;
+  flex-wrap:nowrap!important;
+  box-sizing:border-box!important;
+}
+.next-class-box .next-head-row b{
+  min-width:0!important;
+  flex:1 1 auto!important;
+  display:block!important;
+  text-align:right!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  line-height:1.25!important;
+  font-size:1rem!important;
+  font-weight:1000!important;
+  color:var(--time-txt)!important;
+}
+.next-class-box .next-mini-tag{
+  flex:0 0 auto!important;
+  width:auto!important;
+  min-width:0!important;
+  min-height:0!important;
+  height:auto!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:4px 10px!important;
+  border-radius:999px!important;
+  border:2px solid var(--glass-border)!important;
+  background:var(--card-bg)!important;
+  color:var(--time-txt)!important;
+  font-size:.72rem!important;
+  font-weight:1000!important;
+  line-height:1.15!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+.next-class-box .next-line{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  text-align:right!important;
+  white-space:normal!important;
+  word-break:normal!important;
+  overflow-wrap:anywhere!important;
+  line-height:1.55!important;
+  font-size:.9rem!important;
+  font-weight:950!important;
+  color:var(--txt)!important;
+  opacity:1!important;
+  box-sizing:border-box!important;
+}
+.next-class-box .next-timer-wrap{
+  grid-column:1!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  flex:none!important;
+  align-self:stretch!important;
+  justify-self:stretch!important;
+  box-sizing:border-box!important;
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:8px!important;
+  align-items:center!important;
+  justify-items:center!important;
+  padding:10px!important;
+  margin:0!important;
+  border-radius:22px!important;
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  z-index:1!important;
+  overflow:hidden!important;
+  background:var(--card-bg)!important;
+  border:2px solid var(--glass-border)!important;
+  box-shadow:0 6px 16px rgba(0,0,0,.06)!important;
+}
+.next-class-box .next-timer-wrap::after{display:none!important;content:none!important;}
+.next-class-box .next-timer-top{
+  width:100%!important;
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  margin:0!important;
+  padding:0!important;
+}
+.next-class-box .next-timer-icon{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:34px!important;
+  height:34px!important;
+  min-width:34px!important;
+  border-radius:50%!important;
+  border:2px solid var(--glass-border)!important;
+  background:rgba(255,255,255,.92)!important;
+  box-shadow:0 4px 10px rgba(0,0,0,.08)!important;
+  color:var(--time-txt)!important;
+  font-size:1.16rem!important;
+  line-height:1!important;
+  transform-origin:center center!important;
+  will-change:transform!important;
+}
+.next-class-box .next-timer-icon.running{
+  animation:hourglassFlipV86 2.2s ease-in-out infinite, hourglassFloatV86 1.6s ease-in-out infinite!important;
+}
+.next-class-box .next-timer-icon.started{
+  animation:hourglassPulseV86 1.35s ease-in-out infinite!important;
+}
+.next-class-box .next-timer-label{
+  display:inline-block!important;
+  margin:0!important;
+  padding:0!important;
+  text-align:center!important;
+  line-height:1.25!important;
+  font-size:.88rem!important;
+  font-weight:1000!important;
+  color:var(--time-txt)!important;
+  opacity:1!important;
+}
+.next-class-box .next-countdown{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:40px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  box-sizing:border-box!important;
+  padding:9px 10px!important;
+  margin:0!important;
+  border-radius:18px!important;
+  border:2px solid var(--glass-border)!important;
+  background:rgba(255,255,255,.82)!important;
+  color:var(--time-txt)!important;
+  direction:ltr!important;
+  unicode-bidi:isolate!important;
+  text-align:center!important;
+  font-family:inherit!important;
+  font-variant-numeric:tabular-nums!important;
+  font-feature-settings:"tnum" 1!important;
+  font-size:1.06rem!important;
+  font-weight:1000!important;
+  letter-spacing:1px!important;
+  line-height:1!important;
+  box-shadow:none!important;
+}
+.next-class-box.next-urgent .next-timer-wrap,
+.next-class-box.next-started .next-timer-wrap{border-color:var(--danger)!important;background:rgba(255,49,49,.08)!important;}
+.next-class-box.next-urgent .next-timer-icon,
+.next-class-box.next-started .next-timer-icon,
+.next-class-box.next-urgent .next-timer-label,
+.next-class-box.next-started .next-timer-label,
+.next-class-box.next-urgent .next-countdown,
+.next-class-box.next-started .next-countdown{color:var(--danger)!important;border-color:var(--danger)!important;}
+@keyframes hourglassFlipV86{
+  0%,20%{transform:rotate(0deg) translateY(0) scale(1);}
+  36%{transform:rotate(0deg) translateY(-2px) scale(1.06);}
+  50%,70%{transform:rotate(180deg) translateY(0) scale(1);}
+  86%{transform:rotate(180deg) translateY(-2px) scale(1.06);}
+  100%{transform:rotate(360deg) translateY(0) scale(1);}
+}
+@keyframes hourglassFloatV86{0%,100%{filter:drop-shadow(0 0 0 transparent);}50%{filter:drop-shadow(0 3px 5px rgba(0,0,0,.16));}}
+@keyframes hourglassPulseV86{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+@media(min-width:760px){
+  .next-class-box.next-v86{
+    grid-template-columns:minmax(0,1fr) 205px!important;
+    align-items:center!important;
+  }
+  .next-class-box.next-v86 .next-timer-wrap{grid-column:auto!important;width:205px!important;}
+}
+@media(max-width:520px){
+  .next-class-box,
+  .next-class-box.next-v86{padding:12px!important;gap:9px!important;}
+  .next-class-box .next-head-row{align-items:flex-start!important;}
+  .next-class-box .next-head-row b{font-size:.96rem!important;}
+  .next-class-box .next-line{font-size:.84rem!important;line-height:1.5!important;}
+  .next-class-box .next-timer-wrap{padding:9px!important;gap:7px!important;}
+  .next-class-box .next-countdown{min-height:38px!important;font-size:1rem!important;}
+}
 </style>
 </head>
 <body onload="init()">
@@ -2718,7 +3142,7 @@ ${dupNames.join('\n')}
 <div id="loginScreen" style="display:none!important; position:fixed; inset:0; z-index:9999; background:var(--menu-bg); display:flex; align-items:center; justify-content:center; padding:20px;">
     <div class="glass-box" style="width:100%; max-width:380px; text-align:center;">
         <h1 class="header-title" style="color:var(--txt);">Newton Pro</h1>
-        <p style="color:var(--neon); margin:10px 0; font-weight:bold;">نظام الإدارة الماسي V82 Final Linked</p>
+        <p style="color:var(--neon); margin:10px 0; font-weight:bold;">نظام الإدارة الماسي V86 Clean Timer Red Logo</p>
         <input type="password" id="pass" placeholder="كلمة المرور" style="text-align:center; letter-spacing: 5px; margin-top:20px;">
         <button class="btn-action" style="width:100%;" onclick="login()">دخول المعمل</button>
     </div>
@@ -2745,7 +3169,7 @@ ${dupNames.join('\n')}
                 <i class="fa-solid fa-rotate-left"></i>
             </div>
         </div>
-        <h1 id="mainTitle" style="font-size:1.4rem; margin:0;">نيوتن الماسي</h1>
+        <h1 id="mainTitle" class="main-title-stable">نيوتن الماسي</h1>
         <div class="btn-capsule" style="padding:10px; color:var(--neon); border-color:var(--neon);" onclick="showM('themeM')">
             <i class="fa-solid fa-palette"></i>
         </div>
@@ -2816,29 +3240,34 @@ ${dupNames.join('\n')}
     <div class="filter-grid" id="filterContainer"></div>
 
 
-    <div class="glass-box">
-        <div class="students-panel-head" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h2 style="font-weight:900; font-size:1.1rem; color:var(--txt);">الطلاب</h2>
-            <div class="students-panel-actions" style="display:flex; gap:5px;">
+    <div class="glass-box students-accordion-box" id="studentsAccordionBox">
+        <div class="students-panel-head students-accordion-head" onclick="toggleStudentsAccordion(event)">
+            <div class="students-title-wrap">
+                <h2>الطلاب</h2>
+                <small>اضغط على العنوان لفتح أو إغلاق القائمة</small>
+            </div>
+            <div class="students-panel-actions" onclick="event.stopPropagation()">
                 <button id="viewModeBtn" class="btn-capsule" style="padding:5px 10px; font-size:0.7rem; color:var(--warn); border-color:var(--warn);" onclick="toggleViewMode()">طلاب اليوم 🎯</button>
                 <button class="btn-capsule" style="padding:5px 10px; font-size:0.7rem; color:var(--txt); border-color:var(--ok);" onclick="showRepSelection()">التقرير 📊</button><button class="btn-capsule" style="padding:5px 10px; font-size:0.7rem; color:var(--neon); border-color:var(--neon);" onclick="showRepSelection(); toast('اختار الطلاب بعلامة صح ثم اضغط إصدار تقرير الحصص المختارة 🗓️', 3500)">تقرير الحصص 🗓️</button><button class="btn-capsule" style="padding:5px 10px; font-size:0.7rem; color:var(--warn); border-color:var(--warn);" onclick="showArchive()">الأرشيف 🗄️</button>
             </div>
+            <i id="studentsAccordionIcon" class="fa-solid fa-chevron-up students-accordion-icon"></i>
         </div>
         
-        <div class="students-search-row" style="display:flex; gap:5px; margin-bottom:10px;">
-            <input type="text" placeholder="بحث باسم الطالب..." onkeyup="search(this.value)" style="margin-bottom:0; flex:2;">
-            <select id="sortType" onchange="draw()" style="margin-bottom:0; flex:1; font-size:0.8rem; padding:0 10px;">
-                <option value="default">الترتيب الافتراضي</option>
-                <option value="alpha">الترتيب الأبجدي</option>
-                <option value="debt">الأكثر مديونية 💰</option>
-            </select>
+        <div id="studentsAccordionBody" class="students-accordion-body" style="display:block;">
+            <div class="students-search-row" style="display:flex; gap:5px; margin-bottom:10px;">
+                <input type="text" placeholder="بحث باسم الطالب..." onkeyup="search(this.value)" style="margin-bottom:0; flex:2;">
+                <select id="sortType" onchange="draw()" style="margin-bottom:0; flex:1; font-size:0.8rem; padding:0 10px;">
+                    <option value="default">الترتيب الافتراضي</option>
+                    <option value="alpha">الترتيب الأبجدي</option>
+                    <option value="debt">الأكثر مديونية 💰</option>
+                </select>
+            </div>
+            <div id="list" style="margin-top:15px;"></div>
         </div>
-        
-        <div id="list" style="margin-top:15px;"></div>
     </div>
 
 
-    <div style="text-align:center; opacity:.75; font-weight:900; font-size:.75rem; margin:12px 0 4px; color:var(--txt);">Diamond Newton V82 Final Linked</div>
+    <div style="text-align:center; opacity:.75; font-weight:900; font-size:.75rem; margin:12px 0 4px; color:var(--txt);">Diamond Newton V86 Clean Timer Red Logo</div>
     <button class="fab" onclick="showM('addM')">
         <i class="fa-solid fa-plus"></i>
     </button>
@@ -3148,6 +3577,15 @@ ${dupNames.join('\n')}
             <input type="checkbox" id="noP" style="width:auto; margin:0; accent-color:var(--neon);"> دخول بدون باسورد
         </label>
         
+        <div style="background:var(--glass-bg); border:var(--border-box); border-radius:var(--rad-card); padding:15px; margin-bottom:15px;">
+            <h4 style="color:var(--neon); margin:0 0 10px;">عنوان الواجهة العلوي ✨</h4>
+            <input id="titleASet" placeholder="العنوان الأول مثل: نيوتن الماسي">
+            <input id="titleBSet" placeholder="العنوان الثاني مثل: مستر أحمد">
+            <small style="display:block; color:var(--txt); opacity:.75; line-height:1.7; font-weight:800;">
+                اترك العنوان الثاني فارغًا لو عايز العنوان يثبت بدون تبديل. تم تثبيت مساحة العنوان لمنع نزول وطلوع التطبيق أثناء التبديل.
+            </small>
+        </div>
+        
         <h4 style="color:var(--neon); margin-bottom:10px;">رسالة الواتساب 💬</h4>
         <textarea id="tWAMsg" placeholder="يمكنك كتابة مقدمة إضافية هنا (ستظهر قبل الجملة التحفيزية التلقائية)..." style="resize:vertical; min-height:80px;"></textarea>
         
@@ -3216,7 +3654,7 @@ ${dupNames.join('\n')}
             <div style="display:none; margin-top:15px;">
                 <div class="safety-info-card">
                     <span>رقم النسخة</span>
-                    <b id="appVersionText">Diamond Newton V82 Final Linked</b>
+                    <b id="appVersionText">Diamond Newton V86 Clean Timer Red Logo</b>
                 </div>
                 <div class="safety-info-card">
                     <span>آخر نسخة احتياطية</span>
@@ -3995,8 +4433,9 @@ function renderNextClassBanner(){
     if(!box) return;
     let st = getNextClassBannerState();
     box.classList.remove('next-started','next-urgent');
+    box.classList.add('next-v86');
     if(!st || st.empty || !st.chosen){
-        box.style.display='flex';
+        box.style.display='grid';
         box.innerHTML = `<div class="next-info"><div class="next-head-row"><b>أقرب حصة</b><span class="next-mini-tag">Today</span></div><span class="next-line">لا توجد حصص قادمة في الجدول الفعّال</span></div><div class="next-timer-wrap"><div class="next-timer-top"><span class="next-timer-icon">✓</span><small class="next-timer-label">الحالة</small></div><strong class="next-countdown">فارغ</strong></div>`;
         return;
     }
@@ -4007,7 +4446,7 @@ function renderNextClassBanner(){
     let srcLabel = st.activePlan ? 'Plan B' : 'أساسي';
     let dayLabel = st.isActualToday ? 'اليوم' : st.day;
     let timerValue = st.timerValue || st.countdownText || '';
-    box.style.display='flex';
+    box.style.display='grid';
     box.classList.toggle('next-started', st.state === 'started');
     box.classList.toggle('next-urgent', st.msLeft !== null && st.msLeft > 0 && st.msLeft <= 10*60*1000);
     box.innerHTML = `
@@ -4016,7 +4455,7 @@ function renderNextClassBanner(){
         <span class="next-line">${dayLabel} • ${formatTime12(item.time)} • ${escapeHTML(item.sub || '')} • ${escapeHTML(item.name || '')}</span>
       </div>
       <div class="next-timer-wrap" aria-label="ساعة الوقت المتبقي على أقرب حصة">
-        <div class="next-timer-top"><span class="next-timer-icon">${timerIcon}</span><small class="next-timer-label">${timerLabel}</small></div>
+        <div class="next-timer-top"><span class="next-timer-icon ${st.state === 'started' ? 'started' : 'running'}">${timerIcon}</span><small class="next-timer-label">${timerLabel}</small></div>
         <strong class="next-countdown" aria-label="عد تنازلي لأقرب حصة">${escapeHTML(timerValue)}</strong>
       </div>`;
 }
@@ -4124,7 +4563,7 @@ function saveEmergency(){
    طبقة ربط نهائية: أي تغيير في الطلاب/الجدول/Plan B/الاختبارات/التسجيل يسمع في باقي التطبيق
    ========================================================= */
 (function(){
-  const FINAL_VERSION = 'Diamond Newton V82 Final Linked';
+  const FINAL_VERSION = 'Diamond Newton V86 Clean Timer Red Logo';
   let refreshTimer = null;
   function safeCall(name, fn){
     try { if (typeof fn === 'function') fn(); }

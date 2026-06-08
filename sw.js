@@ -1,4 +1,4 @@
-const CACHE_NAME = 'diamond-newton-v82-final-linked';
+const CACHE_NAME = 'diamond-newton-v86-clean-timer-red-logo';
 const CORE_ASSETS = [
   './',
   './index.html',

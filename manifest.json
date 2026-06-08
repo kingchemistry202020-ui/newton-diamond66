@@ -1,7 +1,7 @@
 {
   "name": "Diamond Newton",
   "short_name": "Newton",
-  "description": "Diamond Newton Cloud Edition - student and schedule management app.",
+  "description": "Diamond Newton V83 - linked student schedule app with red diamond logo.",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "./index.html",
